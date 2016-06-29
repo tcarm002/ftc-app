@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
+            //These lines should match your key
             keyAlias 'FTCKey'
             keyPassword 'keypwd'
             storeFile file('C:/Users/phillip/.AndroidStudio2.1/ftckey.jks')
