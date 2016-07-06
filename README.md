@@ -1,3 +1,21 @@
+#Triana's instructions for FTC-app
+Follow these instructions to set up Android Studio(use the second post)
+You will not download the zip, just clone this repository by using the import feature from Android Studio. Here are the instructions I used to install ftc-app, I am just leaving them here for reference:
+
+1-http://ftcforum.usfirst.org/showthread.php?4414-More-specific-installation-quot-instructions-quot
+
+2-Delete these lines
+  https://medium.com/@marcuspereira/solving-the-gradle-dsl-method-not-found-android-in-android-studio-6e5ab499bd3#.kwdhlsw7k
+
+3-You might receive an error at this point when trying to run, add the required file to the correct dir (specified In the error)
+  http://stackoverflow.com/questions/26768445/how-can-i-get-the-android-support-v4-jar-file-from-android-support-library-on
+
+4-Run
+* If you get a certificate error, follow these steps- You will need to modify the file FtcRobotController, the lines that are preceded by a comment "//These lines should match your key". The steps below will help you build a key, I believe these will automatically update the FtcRobotController file, but I am not sure.
+https://developer.android.com/studio/publish/app-signing.html
+I had to follow the steps to manually sign using Android Studio (Sign Your Release Build). 
+ and then do the auto config (Configure the Build Process to Automatically Sign Your APK)
+
 # ftc_app
 FTC Android Studio project to create FTC Robot Controller app.
 
