@@ -39,12 +39,17 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,6 +68,7 @@ import com.qualcomm.ftccommon.LaunchActivityConstantsList;
 import com.qualcomm.ftccommon.Restarter;
 import com.qualcomm.ftccommon.UpdateUI;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
+import com.qualcomm.ftcrobotcontroller.opmodes.Util;
 import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.Dimmer;
@@ -73,10 +79,17 @@ import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class FtcRobotControllerActivity extends Activity {
+public class FtcRobotControllerActivity extends Activity implements SensorEventListener {
+
+  List<Sensor> mList;
+  Sensor mProximity;
+  float[] mRotationMatrix;
+  private SensorManager mSensorManager;
+  private Sensor mSensor;
 
   private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
   private static final boolean USE_DEVICE_EMULATION = false;
@@ -108,6 +121,51 @@ public class FtcRobotControllerActivity extends Activity {
 
   protected FtcEventLoop eventLoop;
   protected Queue<UsbDevice> receivedUsbAttachmentNotifications;
+
+  @Override
+  public void onSensorChanged(SensorEvent sensorEvent) {
+
+    float result =  sensorEvent.values[0];
+    String msg = "SENSOR INFORMATION\n";
+    msg += result + "\n" + sensorEvent.values[1] + "\n" + sensorEvent.values[2] ;
+
+//
+//
+//    // Convert the rotation-vector to a 4x4 matrix.
+//    SensorManager.getRotationMatrixFromVector(mRotationMatrix,
+//            sensorEvent.values);
+//    SensorManager
+//            .remapCoordinateSystem(mRotationMatrix,
+//                    SensorManager.AXIS_X, SensorManager.AXIS_Z,
+//                    mRotationMatrix);
+//    SensorManager.getOrientation(mRotationMatrix, orientationVals);
+//
+//    // Optionally convert the result from radians to degrees
+//    orientationVals[0] = (float) Math.toDegrees(orientationVals[0]);
+//    orientationVals[1] = (float) Math.toDegrees(orientationVals[1]);
+//    orientationVals[2] = (float) Math.toDegrees(orientationVals[2]);
+//
+//    tv.setText(" Yaw: " + orientationVals[0] + "\n Pitch: "
+//            + orientationVals[1] + "\n Roll (not used): "
+//            + orientationVals[2]);
+
+    msg = String.valueOf(sensorEvent.values[0]);
+//            + " " + String.valueOf(sensorEvent.values[1])
+//            + " " + String.valueOf(sensorEvent.values[2]);
+
+    textErrorMessage.setText(msg);
+
+//    Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
+//    toast.setGravity(Gravity.CENTER, 0, 0);
+//    showToast(toast);
+  }
+
+
+
+  @Override
+  public void onAccuracyChanged(Sensor sensor, int i) {
+
+  }
 
   protected class RobotRestarter implements Restarter {
 
@@ -169,6 +227,11 @@ public class FtcRobotControllerActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    mSensorManager = (SensorManager) Util.getContext().getSystemService(Context.SENSOR_SERVICE);
+    mList= mSensorManager.getSensorList(Sensor.TYPE_ALL);
+    mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+    mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
     receivedUsbAttachmentNotifications = new ConcurrentLinkedQueue<UsbDevice>();
     eventLoop = null;
 
@@ -228,10 +291,35 @@ public class FtcRobotControllerActivity extends Activity {
 
     callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
 
+    String msg = "SENSOR INFORMATION\n";
+
+    for (int i = 1; i < mList.size(); i++)
+    {
+      msg += i + " : " + mList.get(i).getType() + "\n";
+    }
+
+    Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
+    toast.setGravity(Gravity.CENTER, 0, 0);
+    showToast(toast);
+
+
+
     entireScreenLayout.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
         dimmer.handleDimTimer();
+
+//        String msg = "SENSOR INFORMATION\n";
+//        for (int i = 1; i < mList.size(); i++)
+//        {
+//          msg += i + " : " + mList.get(i).getName() + "\n" ;
+//
+//        }
+//
+//        Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
+//        toast.setGravity(Gravity.CENTER, 0, 0);
+//        showToast(toast);
+
         return false;
       }
     });
@@ -239,14 +327,20 @@ public class FtcRobotControllerActivity extends Activity {
     wifiLock.acquire();
   }
 
+
   @Override
   protected void onResume() {
     super.onResume();
+//    mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
+    mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
   }
 
   @Override
   public void onPause() {
     super.onPause();
+
+    mSensorManager.unregisterListener(this);
   }
 
   @Override
@@ -351,6 +445,8 @@ public class FtcRobotControllerActivity extends Activity {
     requestRobotSetup();
   }
 
+
+
   private void requestRobotSetup() {
     if (controllerService == null) return;
 
@@ -390,6 +486,7 @@ public class FtcRobotControllerActivity extends Activity {
     }
     utility.updateHeader(Utility.NO_FILE, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
     return fis;
+
   }
 
   private void requestRobotShutdown() {
