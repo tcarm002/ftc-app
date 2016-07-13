@@ -119,12 +119,6 @@ public class AutoOP extends OpMode {
 		// direction: left_stick_x ranges from -1 to 1, where -1 is full left
 		// and 1 is full right
 
-        String msg = "SENSOR INFORMATION";
-        DbgLog.msg(msg);
-        RobotLog.w( "SENSOR INFO");
-        DbgLog.msg("SENSOR INFO");
-		Toast toast = Toast.makeText(Util.getContext(), msg, Toast.LENGTH_LONG);
-		toast.setGravity(Gravity.CENTER, 0, 0);
         for (int i = 1; i < mList.size(); i++)
         {
             Log.d("Text", i + " : " + mList.get(i).getName() + "\n" );

@@ -45,6 +45,7 @@ public class MyTeleOp extends OpMode {
 
 	DcMotor motorRight;
 	DcMotor motorLeft;
+	DcMotor servoMotor1, servoMotor2;
 
 	/**
 	 * Constructor
@@ -79,6 +80,9 @@ public class MyTeleOp extends OpMode {
 		motorLeft = hardwareMap.dcMotor.get("motor_1");
 		motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
+		servoMotor1 = hardwareMap.dcMotor.get("motor_3");
+		servoMotor2 = hardwareMap.dcMotor.get("motor_4");
+
 	}
 
 	/*
@@ -95,6 +99,8 @@ public class MyTeleOp extends OpMode {
 		 * Gamepad 1 controls the motors via the left stick
 		 */
 
+
+
 		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
 		// 1 is full down
 		// direction: left_stick_x ranges from -1 to 1, where -1 is full left
@@ -104,6 +110,11 @@ public class MyTeleOp extends OpMode {
 		float right = throttle - direction;
 		float left = throttle + direction;
 
+		//for gamepad2
+		boolean rise = gamepad2.dpad_up;
+		boolean lower = gamepad2.dpad_down;
+		double armSpeed = 0.50;
+
 		// clip the right/left values so that the values never exceed +/- 1
 		right = Range.clip(right, -1, 1);
 		left = Range.clip(left, -1, 1);
@@ -112,6 +123,20 @@ public class MyTeleOp extends OpMode {
 		// the robot more precisely at slower speeds.
 		right = (float)scaleInput(right);
 		left =  (float)scaleInput(left);
+
+		if (gamepad1.back) {
+			flipDirection();
+		}
+
+		//giving the arm it's up and down movement
+		if (rise) {
+			servoMotor1.setDirection(DcMotor.Direction.FORWARD);
+			servoMotor1.setPower(armSpeed);
+		}
+		else if (lower) {
+			servoMotor1.setDirection(DcMotor.Direction.REVERSE);
+			servoMotor1.setPower(armSpeed);
+		}
 
 		// write the values to the motors
 		motorRight.setPower(right);
@@ -138,6 +163,17 @@ public class MyTeleOp extends OpMode {
 	@Override
 	public void stop() {
 
+	}
+
+	public void flipDirection() {
+		if (motorLeft.getDirection().equals(DcMotor.Direction.REVERSE)) {
+			motorLeft.setDirection(DcMotor.Direction.FORWARD);
+			motorRight.setDirection(DcMotor.Direction.REVERSE);
+		}
+		else {
+			motorLeft.setDirection(DcMotor.Direction.REVERSE);
+			motorRight.setDirection(DcMotor.Direction.FORWARD);
+		}
 	}
 
 
