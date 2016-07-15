@@ -35,6 +35,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.ftccommon.DbgLog;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.robocol.Telemetry;
 
 /**
  * TeleOp Mode
@@ -45,7 +49,7 @@ public class MyTeleOp extends OpMode {
 
 	DcMotor motorRight;
 	DcMotor motorLeft;
-	DcMotor servoMotor1, servoMotor2;
+//	DcMotor servoMotor1, servoMotor2;
 
 	/**
 	 * Constructor
@@ -76,12 +80,13 @@ public class MyTeleOp extends OpMode {
 		 *   "motor_2" is on the left side of the bot and reversed.
 		 */
 
-		motorRight = hardwareMap.dcMotor.get("motor_2");
-		motorLeft = hardwareMap.dcMotor.get("motor_1");
+		motorLeft = hardwareMap.dcMotor.get("motor_2");
+		motorRight = hardwareMap.dcMotor.get("motor_1");
 		motorLeft.setDirection(DcMotor.Direction.REVERSE);
+		DbgLog.msg("TSC - Activating motors");
 
-		servoMotor1 = hardwareMap.dcMotor.get("motor_3");
-		servoMotor2 = hardwareMap.dcMotor.get("motor_4");
+//		servoMotor1 = hardwareMap.dcMotor.get("motor_3");
+//		servoMotor2 = hardwareMap.dcMotor.get("motor_4");
 
 	}
 
@@ -99,7 +104,9 @@ public class MyTeleOp extends OpMode {
 		 * Gamepad 1 controls the motors via the left stick
 		 */
 
-
+		if (gamepad1.right_bumper) {
+			flipDirection();
+		}
 
 		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
 		// 1 is full down
@@ -124,23 +131,19 @@ public class MyTeleOp extends OpMode {
 		right = (float)scaleInput(right);
 		left =  (float)scaleInput(left);
 
-		if (gamepad1.back) {
-			flipDirection();
-		}
-
-		//giving the arm it's up and down movement
-		if (rise) {
-			servoMotor1.setDirection(DcMotor.Direction.FORWARD);
-			servoMotor1.setPower(armSpeed);
-		}
-		else if (lower) {
-			servoMotor1.setDirection(DcMotor.Direction.REVERSE);
-			servoMotor1.setPower(armSpeed);
-		}
+//		//giving the arm it's up and down movement
+//		if (rise) {
+//			servoMotor1.setDirection(DcMotor.Direction.FORWARD);
+//			servoMotor1.setPower(armSpeed);
+//		}
+//		else if (lower) {
+//			servoMotor1.setDirection(DcMotor.Direction.REVERSE);
+//			servoMotor1.setPower(armSpeed);
+//		}
 
 		// write the values to the motors
-		motorRight.setPower(right);
-		motorLeft.setPower(left);
+		motorRight.setPower(left);
+		motorLeft.setPower(right);
 
 
 		/*
@@ -149,9 +152,12 @@ public class MyTeleOp extends OpMode {
 		 * will return a null value. The legacy NXT-compatible motor controllers
 		 * are currently write only.
 		 */
-        telemetry.addData("Text", "*** Robot Data***");
-        telemetry.addData("left tgt pwr",  "left  pwr: " + String.format("%.2f", left));
-        telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
+        telemetry.addData("T1", "*** looping***");
+//		DbgLog.msg("TSC - Looping");
+//        telemetry.addData("left tgt pwr",  "left  pwr: " + Boolean.toString(gamepad1.right_bumper));
+       // telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
+		//telemetry.addData("Button Pressed:", Boolean.toString(gamepad1.right_bumper));
+
 
 	}
 
@@ -166,6 +172,8 @@ public class MyTeleOp extends OpMode {
 	}
 
 	public void flipDirection() {
+		telemetry.addData("T2","Flipping");
+		DbgLog.msg("TSC - flipping");
 		if (motorLeft.getDirection().equals(DcMotor.Direction.REVERSE)) {
 			motorLeft.setDirection(DcMotor.Direction.FORWARD);
 			motorRight.setDirection(DcMotor.Direction.REVERSE);
