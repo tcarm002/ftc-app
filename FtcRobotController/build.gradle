@@ -6,7 +6,7 @@ android {
             //These lines should match your key
             keyAlias 'FTCKey'
             keyPassword 'keypwd'
-            storeFile file('C:/Users/phillip/.AndroidStudio2.1/ftckey.jks')
+            storeFile file('/Applications/Android Studio.app/ftckey.jks')
             storePassword 'storepwd'
         }
     }

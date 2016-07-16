@@ -50,6 +50,8 @@ public class MyTeleOp extends OpMode {
 
 	DcMotor motorRight;
 	DcMotor motorLeft;
+
+
 //	DcMotor servoMotor1, servoMotor2;
 	Servo servo_1;
 	private ServoController sc;
@@ -110,7 +112,16 @@ public class MyTeleOp extends OpMode {
 		 */
 
 		if (gamepad1.right_bumper) {
-			flipDirection();
+			telemetry.addData("T2","Flipping");
+			DbgLog.msg("TSC - flipping");
+			if (motorLeft.getDirection().equals(DcMotor.Direction.REVERSE)) {
+				motorLeft.setDirection(DcMotor.Direction.FORWARD);
+				motorRight.setDirection(DcMotor.Direction.REVERSE);
+			}
+			else {
+				motorLeft.setDirection(DcMotor.Direction.REVERSE);
+				motorRight.setDirection(DcMotor.Direction.FORWARD);
+			}
 		}
 
 		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
