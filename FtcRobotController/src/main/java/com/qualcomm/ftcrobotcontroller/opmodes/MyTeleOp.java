@@ -34,6 +34,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.ftccommon.DbgLog;
 
@@ -50,6 +51,10 @@ public class MyTeleOp extends OpMode {
 	DcMotor motorRight;
 	DcMotor motorLeft;
 //	DcMotor servoMotor1, servoMotor2;
+	Servo servo_1;
+	private ServoController sc;
+	private double servoPosition = 0.0;
+	double current_pos;
 
 	/**
 	 * Constructor
@@ -84,7 +89,7 @@ public class MyTeleOp extends OpMode {
 		motorRight = hardwareMap.dcMotor.get("motor_1");
 		motorLeft.setDirection(DcMotor.Direction.REVERSE);
 		DbgLog.msg("TSC - Activating motors");
-
+		servo_1 = hardwareMap.servo.get("servo_1");
 //		servoMotor1 = hardwareMap.dcMotor.get("motor_3");
 //		servoMotor2 = hardwareMap.dcMotor.get("motor_4");
 
@@ -116,6 +121,17 @@ public class MyTeleOp extends OpMode {
 		float direction = gamepad1.left_stick_x;
 		float right = throttle - direction;
 		float left = throttle + direction;
+
+		if (gamepad1.left_bumper)
+		{
+			current_pos = servo_1.getPosition();
+			servo1.
+			telemetry.addData("Current hand pos: ","Current hand pos: " + current_pos);
+			telemetry.addData("Max: ","Max: " + servo_1.MAX_POSITION);
+			telemetry.addData("Min: ","Min: " + servo_1.MIN_POSITION);
+			servo_1.setPosition(servo_1.MAX_POSITION);
+			servo_1.setPosition(servo_1.MIN_POSITION);
+		}
 
 		//for gamepad2
 		boolean rise = gamepad2.dpad_up;
@@ -152,7 +168,9 @@ public class MyTeleOp extends OpMode {
 		 * will return a null value. The legacy NXT-compatible motor controllers
 		 * are currently write only.
 		 */
-        telemetry.addData("T1", "*** looping***");
+//        telemetry.addData("T1", "*** looping***");
+		current_pos = servo_1.getPosition();
+		telemetry.addData("Current hand pos: ","Current hand pos: " + current_pos);
 //		DbgLog.msg("TSC - Looping");
 //        telemetry.addData("left tgt pwr",  "left  pwr: " + Boolean.toString(gamepad1.right_bumper));
        // telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
@@ -183,6 +201,9 @@ public class MyTeleOp extends OpMode {
 			motorRight.setDirection(DcMotor.Direction.FORWARD);
 		}
 	}
+
+
+
 
 
 	/*
