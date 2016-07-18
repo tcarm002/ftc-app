@@ -33,6 +33,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.Range;
@@ -48,15 +49,26 @@ import com.qualcomm.robotcore.robocol.Telemetry;
  */
 public class MyTeleOp extends OpMode {
 
+	//Manouvering the Bot
 	DcMotor motorRight;
 	DcMotor motorLeft;
 
+	//Arm extension & Arm Up/Down
+	//DcMotor motorExtension;
+	//DcMotor motorUpDown;
 
-//	DcMotor servoMotor1, servoMotor2;
+	//Servo_1 = Claw Grip, Servo_2 = Claw Rotation
 	Servo servo_1;
+	Servo servo_2;
+
 	private ServoController sc;
 	private double servoPosition = 0.0;
-	double current_pos;
+
+	//current claw grip position
+	double current_pos1;
+
+	//current claw rotation position
+	double current_pos2;
 
 	/**
 	 * Constructor
@@ -89,12 +101,17 @@ public class MyTeleOp extends OpMode {
 
 		motorLeft = hardwareMap.dcMotor.get("motor_2");
 		motorRight = hardwareMap.dcMotor.get("motor_1");
+		//motorExtension = hardwareMap.dcMotor.get("motor_3");
+		//motorUpDown = hardwareMap.dcMotor.get("motor_4");
+
 		motorLeft.setDirection(DcMotor.Direction.REVERSE);
 		DbgLog.msg("TSC - Activating motors");
-		servo_1 = hardwareMap.servo.get("servo_1");
-//		servoMotor1 = hardwareMap.dcMotor.get("motor_3");
-//		servoMotor2 = hardwareMap.dcMotor.get("motor_4");
 
+		servo_1 = hardwareMap.servo.get("servo_1");
+		servo_2 = hardwareMap.servo.get("servo_2");
+
+		current_pos1 = 0.02;
+		current_pos2 = 0;
 	}
 
 	/*
@@ -111,18 +128,7 @@ public class MyTeleOp extends OpMode {
 		 * Gamepad 1 controls the motors via the left stick
 		 */
 
-		if (gamepad1.right_bumper) {
-			telemetry.addData("T2","Flipping");
-			DbgLog.msg("TSC - flipping");
-			if (motorLeft.getDirection().equals(DcMotor.Direction.REVERSE)) {
-				motorLeft.setDirection(DcMotor.Direction.FORWARD);
-				motorRight.setDirection(DcMotor.Direction.REVERSE);
-			}
-			else {
-				motorLeft.setDirection(DcMotor.Direction.REVERSE);
-				motorRight.setDirection(DcMotor.Direction.FORWARD);
-			}
-		}
+		if (gamepad1.back) {flipDirection();}
 
 		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
 		// 1 is full down
@@ -133,18 +139,62 @@ public class MyTeleOp extends OpMode {
 		float right = throttle - direction;
 		float left = throttle + direction;
 
-		if (gamepad1.left_bumper)
+
+		//To control claw grip
+		if (gamepad2.left_bumper)
 		{
-			current_pos = servo_1.getPosition();
-			servo1.
-			telemetry.addData("Current hand pos: ","Current hand pos: " + current_pos);
-			telemetry.addData("Max: ","Max: " + servo_1.MAX_POSITION);
-			telemetry.addData("Min: ","Min: " + servo_1.MIN_POSITION);
-			servo_1.setPosition(servo_1.MAX_POSITION);
-			servo_1.setPosition(servo_1.MIN_POSITION);
+			current_pos1 = 0.05;
+			servo_1.setPosition(current_pos1);
 		}
 
-		//for gamepad2
+		if (gamepad2.right_bumper)
+		{
+			current_pos1 += 0.02;
+			if (current_pos1 >= 0.0 && current_pos1 <=1.0) {
+				servo_1.setPosition(current_pos1);
+			}
+		}
+
+		//To control claw rotation
+		if(gamepad2.a){
+			current_pos2 -= 0.01;
+			if (current_pos2 >= 0.0 && current_pos2 <=1.0) {
+				servo_2.setPosition(current_pos2);
+			}
+			else{
+				current_pos2 = 0;
+		}
+		}
+
+		if(gamepad2.b){
+			current_pos2 += 0.01;
+			if (current_pos2 >= 0.0 && current_pos2 <=1.0) {
+				servo_2.setPosition(current_pos2);
+			}
+			else{
+				current_pos2 = 1.0;
+			}
+		}
+
+		//For testing purposes
+		if(current_pos1 >= 0.0 && current_pos1 <=1.0) {
+			telemetry.addData("Current hand position", "" + current_pos1);
+		}
+		else {
+			telemetry.addData("Current hand position", "OUT OF BOUNDS");
+		}
+
+		if(current_pos2 >= 0.0 && current_pos2 <=1.0) {
+			telemetry.addData("Current rotation", "" + current_pos2);
+		}
+		else {
+			telemetry.addData("Current hand rotation", "OUT OF BOUNDS");
+		}
+
+		//telemetry.addData("Maximum position possible","" + servo_1.MAX_POSITION);
+		//telemetry.addData("Minimum position possible","" + servo_1.MIN_POSITION);
+
+		//For GamePad2
 		boolean rise = gamepad2.dpad_up;
 		boolean lower = gamepad2.dpad_down;
 		double armSpeed = 0.50;
@@ -158,7 +208,7 @@ public class MyTeleOp extends OpMode {
 		right = (float)scaleInput(right);
 		left =  (float)scaleInput(left);
 
-//		//giving the arm it's up and down movement
+//		//Arm's up and down movement
 //		if (rise) {
 //			servoMotor1.setDirection(DcMotor.Direction.FORWARD);
 //			servoMotor1.setPower(armSpeed);
@@ -180,8 +230,6 @@ public class MyTeleOp extends OpMode {
 		 * are currently write only.
 		 */
 //        telemetry.addData("T1", "*** looping***");
-		current_pos = servo_1.getPosition();
-		telemetry.addData("Current hand pos: ","Current hand pos: " + current_pos);
 //		DbgLog.msg("TSC - Looping");
 //        telemetry.addData("left tgt pwr",  "left  pwr: " + Boolean.toString(gamepad1.right_bumper));
        // telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
@@ -213,9 +261,20 @@ public class MyTeleOp extends OpMode {
 		}
 	}
 
-
-
-
+//	public void servoIniPosi(double this_ini_pos, Servo this_servo){
+//		double ini_pos = this_ini_pos;
+//		Servo servo = this_servo;
+//		servo.setPosition(ini_pos);
+//	}
+//
+//	public void servoIncrease(double this_current_pos, Servo this_servo){
+//		double current_pos = this_current_pos;
+//		Servo servo = this_servo;
+//		current_pos += 0.02;
+//		if (current_pos >= 0.0 && current_pos <=1.0) {
+//			servo.setPosition(current_pos);
+//		}
+//	}
 
 	/*
 	 * This method scales the joystick input so for low joystick values, the
